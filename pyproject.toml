@@ -4,28 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "otto-demand-forecasting"
-version = "2.0.0"
-description = "Research-grade multi-horizon forecasting of aggregate e-commerce demand volumes"
+version = "1.0.0"
+description = "Hourly cart and order forecasting from aggregated OTTO clickstream data"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "Chaithanya Vemuri"}]
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115,<1",
   "joblib>=1.4,<2",
   "matplotlib>=3.9,<4",
   "numpy>=2.0,<3",
   "pandas>=2.2,<3",
-  "pydantic>=2.9,<3",
   "PyYAML>=6.0,<7",
   "scikit-learn>=1.5,<2",
   "torch>=2.4,<3",
-  "uvicorn>=0.30,<1"
 ]
 
 [project.optional-dependencies]
 dev = [
-  "httpx>=0.27,<1",
   "pytest>=8.3,<10",
   "pytest-cov>=5,<8",
   "ruff>=0.9,<1"

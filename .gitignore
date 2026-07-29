@@ -17,8 +17,8 @@ data/processed/*
 
 # Preserve auditable tables/plots, but not trained binary artifacts.
 artifacts/*
-!artifacts/legacy_single_split/
-!artifacts/legacy_single_split/**
+!artifacts/preliminary_single_split/
+!artifacts/preliminary_single_split/**
 !artifacts/research/
 artifacts/research/*
 !artifacts/research/.gitkeep

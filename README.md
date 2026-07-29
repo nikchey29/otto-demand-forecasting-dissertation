@@ -1,135 +1,112 @@
-<div align="center">
+# OTTO Hourly Cart and Order Forecasting
 
-# OTTO Aggregate E-commerce Demand Forecasting
+[![Tests](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml/badge.svg)](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml)
 
-### Research-grade, leakage-aware forecasting of hourly cart and order volumes
+**MSc dissertation project by Chaithanya Vemuri**  
+MSc Data Science, AI and Digital Business  
+Gisma University of Applied Sciences, Potsdam Campus  
+Academic year: 2025–2026
 
-[![CI](https://github.com/nikchey29/otto-demand-forecasting/actions/workflows/ci.yml/badge.svg)](https://github.com/nikchey29/otto-demand-forecasting/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-Transformer%20%2B%20GRU-EE4C2C?logo=pytorch&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Inference-009688?logo=fastapi&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-17%20passing-0A9EDC?logo=pytest)
+## About the project
 
-A dissertation-oriented machine-learning repository that converts the OTTO clickstream dataset into an hourly operational time series and forecasts **aggregate cart and order event volumes for the next 24 hours**.
+I built this project to study whether deep-learning models are useful for short-term forecasting when the available time series is small but the raw event data is very large.
 
-</div>
+The source data is the OTTO Recommender Systems clickstream dataset. I aggregate the session events into one global hourly time series and forecast the number of cart and order events for the next 24 hours.
 
-## Start here
+This is **aggregate event-volume forecasting**. It is not a product-level or SKU-level demand forecast because product identifiers are removed during aggregation.
 
-For the complete upload-to-GitHub and real-data execution workflow, follow [`FINAL_GITHUB_AND_EXECUTION_GUIDE.md`](FINAL_GITHUB_AND_EXECUTION_GUIDE.md). A ready-to-run Colab notebook is available at [`notebooks/OTTO_Dissertation_Final_Run_Colab.ipynb`](notebooks/OTTO_Dissertation_Final_Run_Colab.ipynb).
+## Research question
 
-## Scope and claim boundary
+> Can a compact Transformer forecast hourly cart and order volumes more accurately than seasonal, linear, tree-based and recurrent baselines when only four weeks of aggregated history are available?
 
-This repository forecasts **platform-level hourly event volume**. It does not forecast demand for individual products, SKUs, customers, prices, inventory positions or revenue. The academically accurate description is:
+## Data used
 
-> Multi-horizon forecasting of aggregate hourly cart and order volumes from e-commerce clickstream history.
+The raw training data contains more than 220 million clickstream events. After hourly aggregation, it becomes approximately 672 observations, covering 28 days.
 
-The raw OTTO data contains more than 220 million events, but the public training period becomes only 672 hourly observations after global aggregation. This is a large data-engineering task followed by a comparatively small time-series experiment. The repository makes that limitation explicit instead of treating raw event count as the forecasting sample size.
+The model uses:
 
-## Dissertation-grade improvements in version 2
+- historical clicks, carts and orders;
+- hour-of-day features;
+- day-of-week features;
+- a weekend indicator.
 
-The original project provided one chronological holdout and four models. This revision adds the experimental controls normally expected from a strong technical dissertation:
+The forecasting targets are hourly carts and orders. The default input window is 168 hours and the forecast horizon is 24 hours.
 
-- Expanding-window rolling-origin evaluation before the final holdout
-- Five repeated neural-network seeds
-- An untouched final 96-hour test period
-- Ridge hyperparameter selection using validation data only
-- Transformer, GRU and Extra Trees comparison
-- Persistence, 24-hour seasonal, 168-hour seasonal and blended seasonal baselines
-- MAE, RMSE, WAPE, sMAPE, MAPE, bias, MASE and RMSSE
-- Horizon-level error analysis
-- Paired moving-block bootstrap confidence intervals for model differences
-- Split-conformal 90% prediction intervals and coverage reporting
-- Configurable lookback, feature-set and Transformer-depth ablations
-- Dataset integrity checks and SHA-256 fingerprinting
-- Exact experiment manifests including package versions and split boundaries
-- Graceful API startup when model artifacts have not yet been generated
-- Seventeen automated tests, including an end-to-end synthetic research-suite test
+More details are available in [DATA_CARD.md](DATA_CARD.md).
 
-These changes make the repository **ready to produce stronger evidence**. They do not fabricate new OTTO results. The full research commands must be run on the processed OTTO dataset before dissertation tables are updated.
+## Models compared
 
-## Experimental protocol
+- Persistence
+- Seasonal naive using the previous day
+- Seasonal naive using the previous week
+- A daily/weekly seasonal blend
+- Ridge regression
+- Extra Trees
+- GRU
+- Transformer encoder
 
-The full experiment separates model development from final reporting:
+The experiment does not assume that the Transformer must win. A simpler model is preferred when it performs better on chronological validation data.
 
-1. Reserve the final 96 hours as an untouched holdout.
-2. Run three expanding-window chronological folds before that holdout.
-3. Select Ridge regularization on each fold using its validation interval.
-4. Train neural models using five fixed seeds and early stopping.
-5. Rank model families using mean cross-validation WAPE across both targets.
-6. Evaluate all pre-specified model families on the final holdout.
-7. Use block bootstrap intervals because adjacent forecast origins overlap.
-8. Calibrate conformal intervals only on final-fold validation residuals.
-9. Report mean, standard deviation, interval coverage and limitations.
+## Evaluation design
 
-The final test period is not used to choose hyperparameters.
+The main experiment uses:
 
-## Models
+- chronological expanding-window folds;
+- an untouched final 96-hour holdout;
+- scalers fitted only on training data;
+- repeated neural-network seeds;
+- MAE, RMSE, WAPE, sMAPE, MASE and RMSSE;
+- horizon-level error analysis;
+- moving-block bootstrap comparisons;
+- prediction-interval coverage;
+- lookback, feature and model-depth ablations.
 
-| Family | Purpose |
-|---|---|
-| Persistence | Minimum no-change reference |
-| Seasonal naive 24h | Same hour from the previous day |
-| Seasonal naive 168h | Same hour from the previous week |
-| Seasonal blend | Mean of daily and weekly seasonal forecasts |
-| Ridge | Regularized linear multi-output benchmark |
-| Extra Trees | Non-linear tree ensemble benchmark |
-| GRU | Recurrent neural baseline |
-| Transformer | Attention-based multi-horizon model |
+The full plan is described in [docs/EXPERIMENT_PROTOCOL.md](docs/EXPERIMENT_PROTOCOL.md).
 
-The project does not assume the Transformer must win. The model selected by cross-validation is recorded in `experiment_manifest.json` and served by the API where supported.
+## Current status
 
-## Legacy single-split result
+The code, automated tests and synthetic end-to-end checks are complete. The repository also includes the outputs from my earlier single-split experiment in `artifacts/preliminary_single_split/`.
 
-The repository retains the original experiment under `artifacts/legacy_single_split/` for traceability. These values are **not** the new rolling-origin results.
+The final rolling-origin results are generated only after running the research commands on the processed OTTO data. I have intentionally not filled the final results folder with values that were not produced by an actual run.
+
+### Preliminary single-split results
 
 | Model | Carts MAE | Orders MAE | Average MAE |
 |---|---:|---:|---:|
 | Ridge | **2,338.53** | 1,086.99 | **1,712.76** |
 | Transformer | 3,194.64 | **1,042.02** | 2,118.33 |
-| Seasonal naive 24h | 4,064.79 | 1,243.96 | 2,654.37 |
+| Seasonal naive (24h) | 4,064.79 | 1,243.96 | 2,654.37 |
 | Persistence | 14,658.26 | 4,608.62 | 9,633.44 |
 
-The defensible conclusion from that experiment is that Ridge was best overall, while the Transformer achieved a small order-volume advantage on one four-day holdout. No claim of universal Transformer superiority is made.
+These numbers are preliminary. They come from one four-day holdout and should not be used as the final dissertation result.
 
-## Repository structure
+## Repository layout
 
 ```text
 .
 ├── .github/workflows/ci.yml
 ├── artifacts/
-│   ├── legacy_single_split/       # Original reported results
-│   └── research/                  # Generated by the full research suite
+│   ├── preliminary_single_split/
+│   └── research/
 ├── configs/
-│   ├── default.yaml               # Fast single-holdout run
-│   ├── research.yaml              # Full dissertation experiment
-│   └── smoke.yaml                 # Synthetic pipeline validation
+│   ├── default.yaml
+│   ├── research.yaml
+│   └── smoke.yaml
 ├── data/
 │   ├── processed/
 │   └── raw/
 ├── docs/
-│   ├── AI_USE_DISCLOSURE_TEMPLATE.md
-│   ├── DISSERTATION_TECHNICAL_MAP.md
+│   ├── ACADEMIC_INTEGRITY.md
+│   ├── COLAB_GUIDE.md
 │   ├── EXPERIMENT_PROTOCOL.md
-│   ├── REPRODUCIBILITY.md
-│   ├── RESULTS_CHECKLIST.md
-│   └── RUNBOOK_COLAB.md
+│   ├── PROJECT_NOTES.md
+│   └── REPRODUCIBILITY.md
+├── notebooks/
 ├── src/otto_forecasting/
-│   ├── api.py
-│   ├── baselines.py
-│   ├── cli.py
-│   ├── config.py
-│   ├── data.py
-│   ├── dataset.py
-│   ├── metrics.py
-│   ├── model.py
-│   ├── pipeline.py
-│   ├── reporting.py
-│   ├── research.py
-│   └── training.py
 ├── tests/
 ├── DATA_CARD.md
 ├── MODEL_CARD.md
+├── Makefile
 ├── pyproject.toml
 └── requirements-lock.txt
 ```
@@ -137,29 +114,29 @@ The defensible conclusion from that experiment is that Ridge was best overall, w
 ## Installation
 
 ```bash
-git clone https://github.com/nikchey29/otto-demand-forecasting.git
-cd otto-demand-forecasting
+git clone https://github.com/nikchey29/otto-demand-forecasting-dissertation.git
+cd otto-demand-forecasting-dissertation
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e ".[dev]"
 ```
 
-Windows PowerShell activation:
+On Windows PowerShell, activate the environment with:
 
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
-## Dataset preparation
+## Preparing the dataset
 
-Download and unzip the OTTO dataset so that the training file is located at:
+Place the OTTO training file at:
 
 ```text
 data/raw/otto-recsys-train.jsonl
 ```
 
-Aggregate it once:
+Aggregate it into an hourly series:
 
 ```bash
 otto-forecast aggregate \
@@ -168,7 +145,7 @@ otto-forecast aggregate \
   --frequency 1h
 ```
 
-Validate and fingerprint it:
+Check the processed file and record its hash:
 
 ```bash
 otto-forecast audit-data \
@@ -176,9 +153,15 @@ otto-forecast audit-data \
   --output artifacts/data_audit.json
 ```
 
-## Smoke test before the full run
+## Running the project
 
-The synthetic data confirms that the code executes; it is not research evidence.
+Run the tests:
+
+```bash
+pytest -q
+```
+
+Run a quick synthetic check before using the real data:
 
 ```bash
 otto-forecast make-smoke-data \
@@ -188,74 +171,43 @@ otto-forecast make-smoke-data \
 otto-forecast research --config configs/smoke.yaml
 ```
 
-## Run the dissertation experiments
-
-Fast diagnostic experiment:
-
-```bash
-otto-forecast train --config configs/default.yaml
-```
-
-Full repeated-seed rolling-origin evaluation:
+Run the full experiment:
 
 ```bash
 otto-forecast research --config configs/research.yaml
 ```
 
-Ablation study:
+Run the ablation study:
 
 ```bash
 otto-forecast ablate --config configs/research.yaml
 ```
 
-The full research run can take a substantial amount of time. Use a GPU runtime for Transformer and GRU training. JSON aggregation remains CPU-bound.
+The Google Colab steps are in [docs/COLAB_GUIDE.md](docs/COLAB_GUIDE.md).
 
-## Main generated evidence
+## Main outputs
 
-After the full research run, `artifacts/research/` contains:
+The full experiment writes its tables and plots to `artifacts/research/`, including:
 
-| File | Dissertation use |
-|---|---|
-| `data_audit.json` | Dataset integrity and reproducibility |
-| `cv_model_ranking.csv` | Model selection without final-test tuning |
-| `research_metrics_raw.csv` | Fold-, seed-, model- and target-level metrics |
-| `research_metrics_summary.csv` | Mean, standard deviation and run count |
-| `research_predictions.csv` | Auditable prediction-level evidence |
-| `statistical_comparisons.csv` | Block-bootstrap difference intervals |
-| `interval_metrics.csv` | Prediction-interval coverage and width |
-| `selected_model_horizon_metrics.csv` | Error growth across forecast hours |
-| `run_metadata.csv` | Runtime, parameter count and best epoch |
-| `experiment_manifest.json` | Environment, splits, configuration and selected model |
-| `ablation_metrics_summary.csv` | Sensitivity to lookback, features and architecture |
+- cross-validation model rankings;
+- fold-, seed- and target-level metrics;
+- final holdout predictions;
+- horizon-level errors;
+- bootstrap comparison intervals;
+- prediction-interval coverage;
+- experiment metadata and split boundaries;
+- ablation results.
 
-## Tests
+Large datasets and trained binary model files are excluded from GitHub.
 
-```bash
-pytest -q
-pytest --cov=otto_forecasting --cov-report=term-missing --cov-fail-under=65
-```
+## Limitations
 
-The seventeen-test suite checks split boundaries, training-only scaling, baselines, conformal intervals, block bootstrap logic, data auditing, API degradation, configuration compatibility and an end-to-end synthetic research run.
+The largest limitation is the short time span. Although the raw dataset is large, the forecasting experiment has only four weeks of hourly observations. This limits conclusions about monthly seasonality, holidays, promotions and long-term generalisation.
 
-## API
+The model also has no information about price, stock, advertising, product category or promotions. Results should therefore be interpreted as a benchmark on aggregate platform activity, not as a production inventory-planning system.
 
-After the research suite generates the selected model bundle:
+## Reproducibility and academic integrity
 
-```bash
-OTTO_ARTIFACT_DIR=artifacts/research \
-uvicorn otto_forecasting.api:app --host 0.0.0.0 --port 8000
-```
+The exact environment, data checks and output files are described in [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
 
-Endpoints:
-
-- `GET /health`
-- `GET /metadata`
-- `POST /forecast`
-
-The API reports `degraded` rather than crashing when artifacts are absent.
-
-## Dissertation usage warning
-
-Do not paste repository claims into the paper until the full experiment has been run and every value is present in the generated CSV files. Do not describe the task as SKU-level or product-level demand forecasting. Do not claim a model is better when a bootstrap interval includes zero or repeated-seed results are unstable.
-
-The university handbook states that generative-AI use may be restricted. Confirm permitted use with the supervisor, retain an audit trail, disclose assistance where required and be prepared to explain every line of code during the viva.
+Some development and documentation work involved generative-AI assistance. The disclosure is recorded in [docs/ACADEMIC_INTEGRITY.md](docs/ACADEMIC_INTEGRITY.md). I remain responsible for checking the implementation, running the experiments, interpreting the results and following Gisma's submission rules.

@@ -1,85 +1,51 @@
-# Model Card
+# Models and intended use
 
-## System
+## Forecasting task
 
-A comparative forecasting system for aggregate hourly cart and order volumes. The repository evaluates naive, linear, tree-based and neural models rather than presenting one architecture as inherently superior.
+The system uses a historical window of hourly activity to predict cart and order counts for each of the next 24 hours.
 
-## Candidate models
+Default setup:
 
-- Persistence
-- 24-hour seasonal naive
-- 168-hour seasonal naive
-- Daily-weekly seasonal blend
-- Ridge regression
-- Extra Trees
-- GRU
-- Transformer encoder with attention pooling
+- lookback: 168 hours;
+- forecast horizon: 24 hours;
+- targets: carts and orders;
+- forecast strategy: direct multi-output prediction.
 
-## Inputs
+## Models
 
-A chronological lookback window containing historical click, cart and order counts plus engineered temporal features. The default lookback is 168 hours.
+The benchmark includes simple and complex approaches:
 
-## Outputs
+- persistence;
+- 24-hour seasonal naive;
+- 168-hour seasonal naive;
+- daily/weekly seasonal blend;
+- Ridge regression;
+- Extra Trees;
+- GRU;
+- Transformer encoder with attention pooling.
 
-A direct multi-output forecast for the next 24 hours:
+## Model selection
 
-- Cart event volume
-- Order event volume
+Model families are ranked using mean rolling-origin WAPE across carts and orders. The final 96-hour period is kept separate from model development.
 
-Predictions are inverse-transformed and clipped to non-negative values.
-
-## Selection
-
-Model families are ranked using mean rolling-origin cross-validation WAPE across both targets. The final 96-hour holdout is reserved for final evaluation rather than hyperparameter selection.
-
-## Evaluation
-
-- MAE
-- RMSE
-- WAPE
-- sMAPE
-- MAPE
-- Bias
-- MASE
-- RMSSE
-- Horizon-level errors
-- Repeated-seed variation
-- Paired moving-block bootstrap intervals
-- Split-conformal coverage and interval width
-
-## Leakage controls
-
-- Strict chronological boundaries
-- Target windows fully contained in their split
-- Training-only feature and target scaling in every fold
-- Ridge alpha chosen on validation data
-- A final holdout excluded from rolling-origin model development
-- Ablations run before the final holdout
+For neural models, repeated seeds are used to show training variation. The dissertation should report the average and standard deviation rather than only the best run.
 
 ## Intended use
 
-- Academic benchmarking
-- Demonstrating time-series methodology and software engineering
-- Short-horizon operational-volume research
-- Portfolio evidence after the author understands and can defend every component
+This repository is intended for:
 
-## Not intended for
+- an MSc dissertation experiment;
+- comparison of forecasting methods on short aggregated clickstream data;
+- studying temporal leakage, repeated runs and uncertainty;
+- reproducible academic analysis.
 
-- Product-level inventory planning
-- Automated purchasing
-- Financial forecasts
-- Staffing decisions without independent validation
-- Production deployment without monitoring, retraining and current business data
+It is not intended for automated purchasing, product-level inventory planning, financial forecasting or production decisions without further validation.
 
-## Limitations
+## Main risks and limitations
 
-- The aggregated series is short
-- Repeated windows share observations
-- Performance may vary across seeds and folds
-- The public dataset does not establish seasonal or long-term generalization
-- Uncertainty intervals can fail under distribution shift
-- Business drivers such as price and promotion are absent
-
-## Responsible reporting
-
-Report the model selected by the pre-specified protocol, not the most visually impressive model. A lower point estimate should not be described as a clear improvement when the bootstrap interval includes zero.
+- The time series is short.
+- Forecast origins overlap and are dependent.
+- A complex model may overfit.
+- Business drivers such as price and promotions are not available.
+- Prediction intervals may lose coverage when the data distribution changes.
+- Aggregate results cannot be interpreted as product-level demand.

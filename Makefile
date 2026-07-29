@@ -30,6 +30,3 @@ research:
 
 ablate:
 	otto-forecast ablate --config configs/research.yaml
-
-api:
-	OTTO_ARTIFACT_DIR=artifacts/research uvicorn otto_forecasting.api:app --host 0.0.0.0 --port 8000

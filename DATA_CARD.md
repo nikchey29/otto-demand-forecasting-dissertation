@@ -1,69 +1,53 @@
-# Data Card
+# Dataset notes
 
 ## Source
 
-OTTO Recommender Systems clickstream training data. The source dataset contains anonymized sessions and events with timestamps, article identifiers and event types.
+This project uses the public OTTO Recommender Systems training data. Each row represents an anonymised session containing timestamped click, cart and order events.
 
-## Use in this project
+## How I use it
 
-The project does not reproduce the original session-recommendation task. It aggregates all supported events into a single global hourly series:
+The original competition is a session-recommendation task. My dissertation uses the data differently: I aggregate all supported events into one UTC hourly series.
 
-- Clicks
-- Carts
-- Orders
+The resulting columns are:
 
-The forecasting targets are hourly cart and order counts.
+- `clicks`
+- `carts`
+- `orders`
 
-## Derived sample size
+Carts and orders are the forecasting targets. Clicks are used as an explanatory history feature.
 
-After one-hour aggregation, the public training period contains approximately 672 observations, representing 28 days. The raw event count must not be treated as the number of independent forecasting observations.
+## Processing steps
 
-## Processing
+1. Read the JSONL file one session at a time so the complete raw file is not loaded into memory.
+2. Convert event timestamps to UTC hourly buckets.
+3. Count clicks, carts and orders in each hour.
+4. Reindex the full hourly range and fill missing buckets with zero.
+5. Check timestamp order, duplicate hours, missing intervals, negative values and non-finite values.
+6. Save the processed hourly data locally.
 
-- Stream JSONL records without loading the full source into memory
-- Floor event timestamps to UTC hourly buckets
-- Count events by type
-- Reindex the complete hourly range
-- Fill absent buckets with zero counts
-- Validate uniqueness, order, spacing, finite values and non-negative counts
-- Save a processed CSV or Parquet file
+## Effective sample size
+
+The raw dataset contains more than 220 million events, but the hourly forecasting series has approximately 672 rows. The number of raw events is therefore not the statistical sample size of the forecasting experiment.
 
 ## Features
 
-Historical count features:
+Historical values are transformed with `log1p`. The full feature set contains:
 
-- `log_clicks`
-- `log_carts`
-- `log_orders`
+- log clicks;
+- log carts;
+- log orders;
+- sine and cosine of hour of day;
+- sine and cosine of day of week;
+- weekend indicator.
 
-Calendar features:
+## Important limitations
 
-- Hour sine and cosine
-- Day-of-week sine and cosine
-- Weekend indicator
+- Only 28 days of hourly history are available.
+- Product and category information is removed during aggregation.
+- Price, promotion, stock, marketing and holiday information are unavailable.
+- Consecutive forecast windows overlap.
+- Results may not transfer to another retailer or a different time period.
 
-## Limitations
+## Privacy and storage
 
-- Only four weeks of temporal coverage
-- No product-level or category-level forecasts
-- No price, promotion, stock, holiday, campaign or weather features
-- Article and customer heterogeneity is removed by global aggregation
-- OTTO traffic may not represent another retailer or current production behavior
-- Adjacent forecasting windows overlap and are statistically dependent
-
-## Ethics and privacy
-
-The project uses secondary anonymized behavioral event data. It does not attempt to identify users or reconstruct individual behavior. The author must still complete the university's required ethical-approval process for secondary data before submission.
-
-## Reproducibility
-
-`otto-forecast audit-data` records:
-
-- Row count
-- Timestamp range
-- Event totals
-- Zero-activity hours
-- File size
-- SHA-256 fingerprint
-
-Do not publish or redistribute the raw dataset when its license or platform terms prohibit doing so.
+The data is anonymised secondary data. This project does not attempt to identify individual users. The raw file and processed data are excluded from GitHub and must be obtained separately under the dataset's terms.

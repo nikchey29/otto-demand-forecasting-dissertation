@@ -1,22 +1,8 @@
-# Reproducibility Guide
-
-## Required evidence bundle
-
-Archive the following together with the submitted dissertation or in a versioned release:
-
-- Git commit hash
-- `configs/research.yaml`
-- `artifacts/research/data_audit.json`
-- `artifacts/research/experiment_manifest.json`
-- All research CSV files
-- Selected model artifact
-- Feature and target scalers
-- Test output
-- Exact environment lock file
+# Reproducing the experiment
 
 ## Environment
 
-Create a clean environment:
+Create a clean Python environment and install the recorded versions:
 
 ```bash
 python -m venv .venv
@@ -26,9 +12,9 @@ pip install -r requirements-lock.txt
 pip install -e . --no-deps
 ```
 
-The lock file records the versions used to validate this revision. GPU builds of PyTorch may require the installation command recommended by the runtime provider.
+A CUDA environment may require the PyTorch installation command recommended by the runtime provider.
 
-## Data identity
+## Data check
 
 Run:
 
@@ -38,38 +24,31 @@ otto-forecast audit-data \
   --output artifacts/data_audit.json
 ```
 
-The SHA-256 value identifies the exact processed file. A reviewer with a different hash has not reproduced the same input data.
-
-## Determinism
-
-The code sets Python, NumPy and PyTorch seeds and requests deterministic PyTorch algorithms where available. Exact bitwise equality can still vary across:
-
-- CPU and GPU implementations
-- CUDA and cuDNN versions
-- PyTorch versions
-- Parallel tree execution
-- Different hardware architectures
-
-Therefore, report tolerance-based metric reproduction rather than promising identical floating-point values on every machine.
+The audit records the row count, timestamp range, event totals, file size and SHA-256 hash. Two runs should use the same processed-data hash before their results are compared.
 
 ## Commands
 
 ```bash
 pytest -q
-
 otto-forecast research --config configs/research.yaml
-
 otto-forecast ablate --config configs/research.yaml
 ```
 
-## Validation checklist
+## Files to keep with the dissertation
 
-- Processed data hash matches
-- Row count and timestamp range match
-- Fold boundaries match the manifest
-- Seeds match the configuration
-- Model parameter counts match
-- Best epochs are recorded
-- Metrics are calculated in original units
-- No final-test value was used to tune hyperparameters
-- CSV tables and paper values match exactly
+- Git commit hash
+- `configs/research.yaml`
+- data-audit JSON
+- experiment manifest
+- metric CSV files
+- prediction CSV file
+- ablation outputs
+- selected model and scalers in private storage
+- test output
+- environment lock file
+
+## Expected variation
+
+The code sets Python, NumPy and PyTorch seeds and requests deterministic operations where possible. Small numerical differences can still occur across CPUs, GPUs, CUDA versions, PyTorch versions and parallel tree implementations.
+
+Reproduction should therefore compare metrics within a reasonable numerical tolerance rather than require identical binary files.
