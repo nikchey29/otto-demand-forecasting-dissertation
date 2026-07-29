@@ -1,0 +1,27 @@
+{
+  "feature_columns": [
+    "log_clicks",
+    "log_carts",
+    "log_orders",
+    "hour_sin",
+    "hour_cos",
+    "day_sin",
+    "day_cos",
+    "is_weekend"
+  ],
+  "target_columns": [
+    "carts",
+    "orders"
+  ],
+  "lookback": 168,
+  "horizon": 24,
+  "model": {
+    "d_model": 32,
+    "nhead": 4,
+    "num_layers": 2,
+    "dim_feedforward": 128,
+    "dropout": 0.15
+  },
+  "test_windows": 73,
+  "device": "cpu"
+}

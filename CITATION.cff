@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it using this metadata."
+title: "OTTO Aggregate E-commerce Demand Forecasting"
+type: software
+authors:
+  - family-names: Vemuri
+    given-names: Chaithanya
+version: 2.0.0
+date-released: 2026-07-25
+repository-code: "https://github.com/nikchey29/otto-demand-forecasting"
+abstract: "A leakage-aware research framework for multi-horizon forecasting of aggregate hourly cart and order volumes from OTTO clickstream data."
+license: MIT

@@ -1,0 +1,53 @@
+# Full dissertation experiment. Expect a long runtime, particularly on CPU.
+seed: 42
+output_dir: artifacts
+data:
+  raw_path: data/raw/otto-recsys-train.jsonl
+  processed_path: data/processed/otto_hourly.csv
+  frequency: 1h
+  lookback: 168
+  horizon: 24
+  validation_steps: 96
+  test_steps: 96
+  seasonalities: [24, 168]
+model:
+  d_model: 32
+  nhead: 4
+  num_layers: 2
+  dim_feedforward: 128
+  dropout: 0.15
+gru:
+  hidden_size: 48
+  num_layers: 2
+  dropout: 0.15
+baselines:
+  ridge_alphas: [0.1, 1.0, 10.0, 100.0]
+  extra_trees_estimators: 500
+  extra_trees_min_samples_leaf: 3
+  extra_trees_max_features: 0.7
+training:
+  batch_size: 32
+  epochs: 120
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 15
+  gradient_clip: 1.0
+  num_workers: 0
+research:
+  seeds: [42, 123, 2026, 3407, 9999]
+  cv_folds: 3
+  cv_stride: 24
+  cv_validation_steps: 48
+  cv_test_steps: 48
+  final_validation_steps: 96
+  final_test_steps: 96
+  conformal_alpha: 0.10
+  bootstrap_samples: 5000
+  bootstrap_block_size: 24
+  run_gru: true
+  run_extra_trees: true
+  run_ablations: true
+  ablation_seeds: [42, 123, 2026]
+  ablation_lookbacks: [24, 72, 168]
+  ablation_feature_sets: [history_only, full]
+  ablation_transformer_layers: [1, 2]
