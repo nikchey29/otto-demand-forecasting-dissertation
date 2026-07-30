@@ -21,6 +21,24 @@ TEMPORAL_FEATURE_COLUMNS = (
 FEATURE_COLUMNS = HISTORY_FEATURE_COLUMNS + TEMPORAL_FEATURE_COLUMNS
 TARGET_COLUMNS = ("carts", "orders")
 
+FEATURE_COLUMNS = HISTORY_FEATURE_COLUMNS + TEMPORAL_FEATURE_COLUMNS
+TARGET_COLUMNS = ("carts", "orders")
+
+
+def parse_fixed_frequency(frequency: str) -> pd.Timedelta:
+    """Convert a fixed pandas frequency into a Timedelta."""
+    try:
+        offset = pd.tseries.frequencies.to_offset(frequency)
+        delta = pd.Timedelta(offset.nanos, unit="ns")
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "Frequency must be a fixed duration such as '1h' or '30min'"
+        ) from exc
+
+    if delta <= pd.Timedelta(0):
+        raise ValueError("Frequency must be positive")
+
+    return delta
 
 def aggregate_jsonl(input_path: str | Path, frequency: str = "1h") -> pd.DataFrame:
     """Stream the OTTO JSONL file and aggregate supported events into fixed time buckets."""
@@ -28,7 +46,8 @@ def aggregate_jsonl(input_path: str | Path, frequency: str = "1h") -> pd.DataFra
     if not source.exists():
         raise FileNotFoundError(f"Dataset not found: {source}")
 
-    interval_ms = int(pd.Timedelta(frequency).total_seconds() * 1000)
+   interval = parse_fixed_frequency(frequency)
+interval_ms = int(interval.total_seconds() * 1000)
     if interval_ms <= 0:
         raise ValueError("Frequency must be positive")
     counts: dict[int, dict[str, int]] = defaultdict(
@@ -90,7 +109,7 @@ def validate_hourly_frame(frame: pd.DataFrame, frequency: str = "1h") -> None:
     if not timestamps.is_monotonic_increasing:
         raise ValueError("Timestamps must be in chronological order")
     if len(timestamps) > 1:
-        expected = pd.Timedelta(frequency)
+       expected = parse_fixed_frequency(frequency)
         if not timestamps.diff().dropna().eq(expected).all():
             raise ValueError(f"Timestamps must be consecutive at frequency {frequency}")
 
