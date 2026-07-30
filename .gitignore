@@ -15,17 +15,22 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
-# Preserve auditable tables/plots, but not trained binary artifacts.
+# Preserve publication-ready research tables and plots.
 artifacts/*
+
 !artifacts/preliminary_single_split/
 !artifacts/preliminary_single_split/**
+
 !artifacts/research/
-artifacts/research/*
-!artifacts/research/.gitkeep
-!artifacts/research/*.csv
-!artifacts/research/*.json
-!artifacts/research/*.png
+!artifacts/research/**/
+!artifacts/research/**/*.csv
+!artifacts/research/**/*.json
+!artifacts/research/**/*.png
+
+# Exclude trained models and runtime binaries.
 artifacts/**/*.pt
 artifacts/**/*.joblib
 artifacts/**/*.npy
+
+# Synthetic validation outputs are not dissertation results.
 artifacts/smoke/
