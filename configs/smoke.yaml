@@ -1,4 +1,4 @@
-# Fast end-to-end validation on generated synthetic data. These are not dissertation results.
+# Small synthetic run for checking that the pipeline executes.
 seed: 42
 output_dir: artifacts/smoke
 data:

@@ -4,6 +4,7 @@ __pycache__/
 .coverage
 htmlcov/
 .ruff_cache/
+.ipynb_checkpoints/
 .venv/
 .env
 .DS_Store
@@ -15,9 +16,8 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
-# Preserve publication-ready research tables and plots.
+# Keep result tables and figures, but not fitted model binaries.
 artifacts/*
-
 !artifacts/preliminary_single_split/
 !artifacts/preliminary_single_split/**
 
@@ -27,10 +27,9 @@ artifacts/*
 !artifacts/research/**/*.json
 !artifacts/research/**/*.png
 
-# Exclude trained models and runtime binaries.
 artifacts/**/*.pt
 artifacts/**/*.joblib
 artifacts/**/*.npy
 
-# Synthetic validation outputs are not dissertation results.
+# Synthetic runs are only for checking the code path.
 artifacts/smoke/

@@ -1,4 +1,4 @@
-# Full dissertation experiment. Expect a long runtime, particularly on CPU.
+# Main rolling-origin experiment. Neural runs are much faster on a GPU.
 seed: 42
 output_dir: artifacts
 data:

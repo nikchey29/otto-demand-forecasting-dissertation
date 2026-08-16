@@ -21,12 +21,9 @@ TEMPORAL_FEATURE_COLUMNS = (
 FEATURE_COLUMNS = HISTORY_FEATURE_COLUMNS + TEMPORAL_FEATURE_COLUMNS
 TARGET_COLUMNS = ("carts", "orders")
 
-FEATURE_COLUMNS = HISTORY_FEATURE_COLUMNS + TEMPORAL_FEATURE_COLUMNS
-TARGET_COLUMNS = ("carts", "orders")
-
 
 def parse_fixed_frequency(frequency: str) -> pd.Timedelta:
-    """Convert a fixed pandas frequency into a Timedelta."""
+    """Return a Timedelta for a fixed pandas offset such as ``1h``."""
     try:
         offset = pd.tseries.frequencies.to_offset(frequency)
         delta = pd.Timedelta(offset.nanos, unit="ns")
@@ -37,19 +34,16 @@ def parse_fixed_frequency(frequency: str) -> pd.Timedelta:
 
     if delta <= pd.Timedelta(0):
         raise ValueError("Frequency must be positive")
-
     return delta
 
+
 def aggregate_jsonl(input_path: str | Path, frequency: str = "1h") -> pd.DataFrame:
-    """Stream the OTTO JSONL file and aggregate supported events into fixed time buckets."""
+    """Read OTTO sessions one line at a time and count events in fixed UTC buckets."""
     source = Path(input_path)
     if not source.exists():
         raise FileNotFoundError(f"Dataset not found: {source}")
 
-   interval = parse_fixed_frequency(frequency)
-interval_ms = int(interval.total_seconds() * 1000)
-    if interval_ms <= 0:
-        raise ValueError("Frequency must be positive")
+    interval_ms = int(parse_fixed_frequency(frequency).total_seconds() * 1000)
     counts: dict[int, dict[str, int]] = defaultdict(
         lambda: {event_type: 0 for event_type in EVENT_TYPES}
     )
@@ -58,15 +52,18 @@ interval_ms = int(interval.total_seconds() * 1000)
         for line_number, line in enumerate(handle, start=1):
             if not line.strip():
                 continue
+
             try:
                 session = json.loads(line)
             except json.JSONDecodeError as exc:
                 raise ValueError(f"Invalid JSON on line {line_number}") from exc
+
             for event in session.get("events", []):
                 event_type = event.get("type")
                 timestamp = event.get("ts")
                 if event_type not in EVENT_TYPES or timestamp is None:
                     continue
+
                 bucket = int(timestamp) // interval_ms * interval_ms
                 counts[bucket][event_type] += 1
 
@@ -79,6 +76,7 @@ interval_ms = int(interval.total_seconds() * 1000)
     ]
     frame = pd.DataFrame(rows).sort_values("timestamp").reset_index(drop=True)
     frame["timestamp"] = pd.to_datetime(frame["timestamp"], unit="ms", utc=True)
+
     full_range = pd.date_range(
         start=frame["timestamp"].min(),
         end=frame["timestamp"].max(),
@@ -91,6 +89,7 @@ interval_ms = int(interval.total_seconds() * 1000)
         .rename_axis("timestamp")
         .reset_index()
     )
+
     validate_hourly_frame(frame, frequency)
     return frame
 
@@ -108,8 +107,9 @@ def validate_hourly_frame(frame: pd.DataFrame, frequency: str = "1h") -> None:
         raise ValueError("Duplicate timestamps were found")
     if not timestamps.is_monotonic_increasing:
         raise ValueError("Timestamps must be in chronological order")
+
     if len(timestamps) > 1:
-       expected = parse_fixed_frequency(frequency)
+        expected = parse_fixed_frequency(frequency)
         if not timestamps.diff().dropna().eq(expected).all():
             raise ValueError(f"Timestamps must be consecutive at frequency {frequency}")
 
@@ -124,8 +124,10 @@ def add_time_features(frame: pd.DataFrame) -> pd.DataFrame:
     validate_hourly_frame(frame)
     result = frame.copy()
     result["timestamp"] = pd.to_datetime(result["timestamp"], utc=True)
+
     hour = result["timestamp"].dt.hour.to_numpy()
     day = result["timestamp"].dt.dayofweek.to_numpy()
+
     result["log_clicks"] = np.log1p(result["clicks"].to_numpy(dtype=np.float64))
     result["log_carts"] = np.log1p(result["carts"].to_numpy(dtype=np.float64))
     result["log_orders"] = np.log1p(result["orders"].to_numpy(dtype=np.float64))
@@ -162,10 +164,12 @@ def load_processed(path: str | Path) -> pd.DataFrame:
     source = Path(path)
     if not source.exists():
         raise FileNotFoundError(f"Processed dataset not found: {source}")
+
     if source.suffix.lower() == ".parquet":
         frame = pd.read_parquet(source)
     else:
         frame = pd.read_csv(source)
+
     frame["timestamp"] = pd.to_datetime(frame["timestamp"], utc=True)
     validate_hourly_frame(frame)
     return frame
@@ -183,6 +187,7 @@ def audit_frame(frame: pd.DataFrame, source_path: str | Path | None = None) -> d
     validate_hourly_frame(frame)
     timestamps = pd.to_datetime(frame["timestamp"], utc=True)
     event_values = frame.loc[:, EVENT_TYPES]
+
     audit: dict[str, Any] = {
         "rows": int(len(frame)),
         "start_timestamp": timestamps.iloc[0].isoformat(),
@@ -195,10 +200,12 @@ def audit_frame(frame: pd.DataFrame, source_path: str | Path | None = None) -> d
         "event_means": {column: float(event_values[column].mean()) for column in EVENT_TYPES},
         "event_maxima": {column: int(event_values[column].max()) for column in EVENT_TYPES},
     }
+
     if source_path is not None and Path(source_path).exists():
         audit["source_path"] = str(source_path)
         audit["sha256"] = sha256_file(source_path)
         audit["size_bytes"] = int(Path(source_path).stat().st_size)
+
     return audit
 
 
@@ -207,14 +214,16 @@ def generate_synthetic_hourly(
     seed: int = 42,
     start: str = "2026-01-01T00:00:00Z",
 ) -> pd.DataFrame:
-    """Create a realistic-looking synthetic series for smoke tests only."""
+    """Generate a small seasonal series for testing the pipeline."""
     if hours < 300:
         raise ValueError("Synthetic series must contain at least 300 hours")
+
     rng = np.random.default_rng(seed)
     timestamps = pd.date_range(start=start, periods=hours, freq="1h", tz="UTC")
     index = np.arange(hours, dtype=np.float64)
     hour = timestamps.hour.to_numpy()
     day = timestamps.dayofweek.to_numpy()
+
     daily = 1.0 + 0.35 * np.sin(2 * np.pi * (hour - 8) / 24)
     weekly = np.where(day >= 5, 0.82, 1.0)
     trend = 1.0 + 0.0007 * index
@@ -226,6 +235,7 @@ def generate_synthetic_hourly(
     carts = rng.binomial(clicks, cart_rate)
     order_rate = np.clip(0.31 + 0.025 * np.cos(2 * np.pi * hour / 24), 0.15, 0.50)
     orders = rng.binomial(carts, order_rate)
+
     return pd.DataFrame(
         {
             "timestamp": timestamps,

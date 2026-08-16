@@ -2,7 +2,7 @@
 
 ## Environment
 
-Create a clean Python environment and install the recorded versions:
+The package requires Python 3.11 or later.
 
 ```bash
 python -m venv .venv
@@ -12,43 +12,62 @@ pip install -r requirements-lock.txt
 pip install -e . --no-deps
 ```
 
-A CUDA environment may require the PyTorch installation command recommended by the runtime provider.
+On a CUDA runtime, install the PyTorch build appropriate for that environment if the pinned
+wheel is not suitable.
 
-## Data check
+## Data
 
-Run:
+The repository does not include the OTTO dataset. The processed file expected by the package is:
 
-```bash
-otto-forecast audit-data \
-  --input data/processed/otto_hourly.csv \
-  --output artifacts/data_audit.json
+```text
+data/processed/otto_hourly.csv
 ```
 
-The audit records the row count, timestamp range, event totals, file size and SHA-256 hash. Two runs should use the same processed-data hash before their results are compared.
+Before comparing two runs, create an audit:
 
-## Commands
+```bash
+otto-forecast audit-data   --input data/processed/otto_hourly.csv   --output artifacts/data_audit.json
+```
+
+The audit records the row count, timestamp range, event totals, file size and SHA-256 hash.
+
+## Checks
 
 ```bash
 pytest -q
+python scripts/check_quality.py
+```
+
+A short synthetic run is available for checking the software path:
+
+```bash
+otto-forecast make-smoke-data   --output data/processed/synthetic_hourly.csv   --hours 500
+
+otto-forecast research --config configs/smoke.yaml
+```
+
+Synthetic metrics are only a software check and should not be mixed with the dissertation
+results.
+
+## Main experiment
+
+```bash
 otto-forecast research --config configs/research.yaml
 otto-forecast ablate --config configs/research.yaml
 ```
 
-## Files to keep with the dissertation
+The main output directory is `artifacts/research/`.
 
-- Git commit hash
-- `configs/research.yaml`
-- data-audit JSON
-- experiment manifest
-- metric CSV files
-- prediction CSV file
-- ablation outputs
-- selected model and scalers in private storage
-- test output
-- environment lock file
+For the dissertation archive I keep:
 
-## Expected variation
+- the processed-data hash;
+- the exact configuration file;
+- the metric and prediction CSV files;
+- the experiment manifest;
+- the ablation tables;
+- the selected trained model/scalers in private storage;
+- the software test result.
 
-The code sets Python, NumPy and PyTorch seeds and requests deterministic operations where possible. Small numerical differences can still occur across CPUs, GPUs, CUDA versions, PyTorch versions and parallel tree implementations.
-
-Reproduction should therefore compare metrics within a reasonable numerical tolerance rather than require identical binary files.
+The code fixes Python, NumPy and PyTorch seeds and asks PyTorch for deterministic behaviour
+where possible. Small numerical differences can still occur across hardware, CUDA versions and
+parallel tree implementations.
