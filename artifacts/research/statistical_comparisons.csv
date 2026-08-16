@@ -1,0 +1,3 @@
+target,model_a,model_b,mae_difference_a_minus_b,ci_2_5,ci_97_5,probability_a_better
+carts,Seasonal naive 168h,Seasonal blend 24h+168h,-403.18065068493115,-621.0870933219175,-211.886779394977,1.0
+orders,Seasonal naive 168h,Seasonal blend 24h+168h,-94.8347602739725,-204.36384132420073,-3.627511415525305,0.9786

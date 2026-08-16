@@ -1,5 +1,4 @@
 # OTTO Hourly Cart and Order Forecasting
-
 **Chaithanya Vemuri**
 MSc Data Science, AI and Digital Business — Gisma University of Applied Sciences, Potsdam
 
@@ -85,26 +84,89 @@ The full evaluation code supports:
 The reasoning behind these choices is recorded in
 [`docs/EXPERIMENT_DESIGN.md`](docs/EXPERIMENT_DESIGN.md).
 
-## First holdout run
+## ## Final evaluation
 
-Before adding the rolling-origin evaluation, I ran a single chronological four-day holdout.
-Those outputs are kept in `artifacts/preliminary_single_split/` because they show how the
-project developed.
+Model selection was based on mean WAPE across three rolling-origin
+development folds. The final 96 hours of the series were kept separate
+from model selection and used only for the final holdout evaluation.
 
-| Model | Carts MAE | Orders MAE | Mean MAE |
+### Cross-validation model ranking
+
+| Rank | Model | Mean CV WAPE |
+|---:|---|---:|
+| 1 | Seasonal naive 168h | 0.1393 |
+| 2 | Seasonal blend 24h+168h | 0.1399 |
+| 3 | Extra Trees | 0.1435 |
+| 4 | GRU | 0.1542 |
+| 5 | Ridge | 0.1679 |
+| 6 | Transformer | 0.1767 |
+| 7 | Seasonal naive 24h | 0.1917 |
+| 8 | Persistence | 0.7027 |
+
+The weekly seasonal baseline was selected before looking at the final
+holdout. Greater model complexity did not translate into better
+forecasting performance on this short aggregate time series.
+
+### Final 96-hour holdout
+
+| Target | MAE | RMSE | WAPE |
 |---|---:|---:|---:|
-| Ridge | **2,338.53** | 1,086.99 | **1,712.76** |
-| Transformer | 3,194.64 | **1,042.02** | 2,118.33 |
-| Seasonal naive (24h) | 4,064.79 | 1,243.96 | 2,654.37 |
-| Persistence | 14,658.26 | 4,608.62 | 9,633.44 |
+| Carts | 2,465.15 | 3,539.27 | 0.0980 |
+| Orders | 826.39 | 1,168.39 | 0.1134 |
 
-The result that changed my approach was that the Transformer did **not** win overall: Ridge
-was clearly better on carts, while the Transformer was slightly better on orders. For that
-reason the final experiment is framed as a comparison of model complexity rather than an
-attempt to prove that deep learning is superior.
+Performance varied by target. Ridge obtained a lower carts WAPE of
+0.0890, while the weekly seasonal baseline obtained a lower orders
+WAPE of 0.1134 compared with Ridge's 0.1218. The final model was not
+changed after observing the holdout; the model selected by the
+predefined cross-validation rule was retained.
 
-These are preliminary numbers, not the final dissertation results. The final rolling-origin
-outputs belong in `artifacts/research/` after the real-data experiment has been run.
+### Statistical comparison
+
+The selected weekly baseline was compared with the cross-validation
+runner-up, the 24h+168h seasonal blend, using a moving-block bootstrap.
+
+| Target | MAE difference | 95% bootstrap interval | P(selected model better) |
+|---|---:|---:|---:|
+| Carts | -403.18 | [-621.09, -211.89] | 1.0000 |
+| Orders | -94.83 | [-204.36, -3.63] | 0.9786 |
+
+Negative differences indicate lower MAE for the selected 168-hour
+seasonal baseline. Both bootstrap intervals remained below zero.
+
+### Prediction intervals
+
+Validation-calibrated prediction intervals used a nominal coverage
+target of 90%.
+
+| Target | Nominal coverage | Empirical coverage | Mean interval width |
+|---|---:|---:|---:|
+| Carts | 0.90 | 0.9589 | 15,530.88 |
+| Orders | 0.90 | 0.9275 | 4,370.04 |
+
+The intervals over-covered the nominal target, particularly for carts,
+so they are treated as empirical uncertainty estimates rather than
+guaranteed future coverage.
+
+### Transformer ablation
+
+The Transformer ablation varied the historical lookback, feature set
+and number of encoder layers. The best tested configuration used a
+24-hour lookback, historical event features only, and two Transformer
+encoder layers, with a mean WAPE of 0.1584 within the ablation study.
+
+Longer input histories did not improve Transformer performance in this
+experiment. Adding explicit calendar features also generally increased
+WAPE, while two encoder layers performed modestly better than one
+across the tested configurations.
+
+The ablation uses a lighter evaluation protocol than the main model
+comparison, so its WAPE values are interpreted only within the
+ablation experiment.
+
+Complete result tables, predictions, uncertainty analysis, figures and
+ablation outputs are available in
+[`artifacts/research/`](artifacts/research/).
+
 
 ## Running the core Transformer in Colab
 

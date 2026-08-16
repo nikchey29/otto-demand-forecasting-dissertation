@@ -1,0 +1,27 @@
+{
+  "rows": 672,
+  "start_timestamp": "2022-07-31T22:00:00+00:00",
+  "end_timestamp": "2022-08-28T21:00:00+00:00",
+  "duration_hours": 672,
+  "frequency": "1h",
+  "duplicate_timestamps": 0,
+  "zero_activity_hours": 0,
+  "event_totals": {
+    "clicks": 194720954,
+    "carts": 16896191,
+    "orders": 5098951
+  },
+  "event_means": {
+    "clicks": 289763.3244047619,
+    "carts": 25143.14136904762,
+    "orders": 7587.724702380952
+  },
+  "event_maxima": {
+    "clicks": 664607,
+    "carts": 59240,
+    "orders": 21874
+  },
+  "source_path": "/content/otto_final/otto-demand-forecasting-dissertation/data/processed/otto_hourly.csv",
+  "sha256": "2af9e1f827422f0b6694d4d456d208691802939bf852cdad7e05d960dc625283",
+  "size_bytes": 29434
+}

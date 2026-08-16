@@ -1,0 +1,3 @@
+model,target,nominal_coverage,empirical_coverage,coverage_gap,mean_interval_width
+Seasonal naive 168h,carts,0.9,0.958904109589041,0.05890410958904102,15530.876712328767
+Seasonal naive 168h,orders,0.9,0.9275114155251142,0.027511415525114158,4370.037100456621

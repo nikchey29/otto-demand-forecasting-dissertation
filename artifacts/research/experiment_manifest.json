@@ -1,0 +1,156 @@
+{
+  "selected_model_by_cv": "Seasonal naive 168h",
+  "runner_up_by_cv": "Seasonal blend 24h+168h",
+  "selection_metric": "mean CV WAPE across carts and orders",
+  "selected_artifact": null,
+  "selected_artifacts": [],
+  "deployment_strategy": "single fitted model",
+  "feature_columns": [
+    "log_clicks",
+    "log_carts",
+    "log_orders",
+    "hour_sin",
+    "hour_cos",
+    "day_sin",
+    "day_cos",
+    "is_weekend"
+  ],
+  "target_columns": [
+    "carts",
+    "orders"
+  ],
+  "lookback": 168,
+  "horizon": 24,
+  "cv_folds": [
+    {
+      "fold_id": 1,
+      "train_end": 432,
+      "validation_start": 432,
+      "test_start": 480,
+      "test_end": 528
+    },
+    {
+      "fold_id": 2,
+      "train_end": 456,
+      "validation_start": 456,
+      "test_start": 504,
+      "test_end": 552
+    },
+    {
+      "fold_id": 3,
+      "train_end": 480,
+      "validation_start": 480,
+      "test_start": 528,
+      "test_end": 576
+    }
+  ],
+  "final_fold": {
+    "fold_id": 0,
+    "train_end": 480,
+    "validation_start": 480,
+    "test_start": 576,
+    "test_end": 672
+  },
+  "seeds": [
+    42,
+    123,
+    2026,
+    3407,
+    9999
+  ],
+  "conformal_alpha": 0.1,
+  "python": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+  "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+  "numpy": "2.0.2",
+  "pandas": "2.2.2",
+  "scikit_learn": "1.6.1",
+  "torch": "2.11.0+cu128",
+  "config": {
+    "seed": 42,
+    "output_dir": "/content/drive/MyDrive/OTTO_Dissertation/final_results",
+    "data": {
+      "raw_path": "data/raw/otto-recsys-train.jsonl",
+      "processed_path": "/content/otto_final/otto-demand-forecasting-dissertation/data/processed/otto_hourly.csv",
+      "frequency": "1h",
+      "lookback": 168,
+      "horizon": 24,
+      "validation_steps": 96,
+      "test_steps": 96,
+      "seasonalities": [
+        24,
+        168
+      ]
+    },
+    "model": {
+      "d_model": 32,
+      "nhead": 4,
+      "num_layers": 2,
+      "dim_feedforward": 128,
+      "dropout": 0.15
+    },
+    "training": {
+      "batch_size": 32,
+      "epochs": 120,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "patience": 15,
+      "gradient_clip": 1.0,
+      "num_workers": 0
+    },
+    "gru": {
+      "hidden_size": 48,
+      "num_layers": 2,
+      "dropout": 0.15
+    },
+    "baselines": {
+      "ridge_alphas": [
+        0.1,
+        1.0,
+        10.0,
+        100.0
+      ],
+      "extra_trees_estimators": 500,
+      "extra_trees_min_samples_leaf": 3,
+      "extra_trees_max_features": 0.7
+    },
+    "research": {
+      "seeds": [
+        42,
+        123,
+        2026,
+        3407,
+        9999
+      ],
+      "cv_folds": 3,
+      "cv_stride": 24,
+      "cv_validation_steps": 48,
+      "cv_test_steps": 48,
+      "final_validation_steps": 96,
+      "final_test_steps": 96,
+      "conformal_alpha": 0.1,
+      "bootstrap_samples": 5000,
+      "bootstrap_block_size": 24,
+      "run_gru": true,
+      "run_extra_trees": true,
+      "run_ablations": true,
+      "ablation_seeds": [
+        42,
+        123,
+        2026
+      ],
+      "ablation_lookbacks": [
+        24,
+        72,
+        168
+      ],
+      "ablation_feature_sets": [
+        "history_only",
+        "full"
+      ],
+      "ablation_transformer_layers": [
+        1,
+        2
+      ]
+    }
+  }
+}
