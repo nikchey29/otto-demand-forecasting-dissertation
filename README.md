@@ -84,7 +84,7 @@ The full evaluation code supports:
 The reasoning behind these choices is recorded in
 [`docs/EXPERIMENT_DESIGN.md`](docs/EXPERIMENT_DESIGN.md).
 
-## ## Final evaluation
+## Final evaluation
 
 Model selection was based on mean WAPE across three rolling-origin
 development folds. The final 96 hours of the series were kept separate
