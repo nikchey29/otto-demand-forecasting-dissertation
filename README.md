@@ -146,6 +146,8 @@ from model selection and used only for the final holdout evaluation.
 | 7 | Seasonal naive 24h | 0.1917 |
 | 8 | Persistence | 0.7027 |
 
+![Cross-validation model comparison](artifacts/research/model_comparison_repeated.png)
+
 The weekly seasonal baseline was selected before looking at the final
 holdout. Greater model complexity did not translate into better
 forecasting performance on this short aggregate time series.
