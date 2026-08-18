@@ -12,6 +12,27 @@ event log is huge, but the time series available after aggregation is short?** T
 became important during the work. The OTTO training data contains hundreds of millions of
 events, but after global hourly aggregation there are only about four weeks of observations.
 
+## Project at a Glance
+
+This dissertation investigates multi-horizon demand forecasting for e-commerce cart and order activity using statistical baselines, machine-learning models, recurrent neural networks, and a Transformer encoder.
+
+The project focuses not only on predictive performance, but also on rigorous time-series evaluation: chronological splits, rolling-origin cross-validation, fixed random seeds, statistical model comparison, prediction intervals, and a final untouched holdout period.
+
+**Core stack:** Python, PyTorch, scikit-learn, pandas, NumPy
+
+**Research focus:** Time-series forecasting, demand forecasting, deep learning, model evaluation, statistical comparison
+
+### Repository Guide
+
+- [Forecasting task](#what-i-am-forecasting)
+- [Models](#models)
+- [Evaluation](#evaluation)
+- [Key findings](#key-findings)
+- [Final evaluation](#final-evaluation)
+- [Repository structure](#repository-structure)
+- [Main limitation](#main-limitation)
+- [Reproducibility](#reproducibility)
+
 ## What I am forecasting
 
 One row in the processed data represents one UTC hour:
@@ -84,7 +105,14 @@ The full evaluation code supports:
 The reasoning behind these choices is recorded in
 [`docs/EXPERIMENT_DESIGN.md`](docs/EXPERIMENT_DESIGN.md).
 
-## Final evaluation
+## Key Findings
+
+- The weekly seasonal baseline achieved the strongest performance during model development, outperforming the more complex neural architectures on the available aggregated time series.
+- The experiments show that greater model complexity did not automatically translate into better forecasting performance for the available aggregated time series.
+- Model selection was based on the predefined cross-validation procedure rather than the final holdout results.
+- Statistical comparisons, prediction intervals, and Transformer ablation experiments were used to examine performance beyond a single headline metric.
+
+## Final Evaluation
 
 Model selection was based on mean WAPE across three rolling-origin
 development folds. The final 96 hours of the series were kept separate
