@@ -52,6 +52,21 @@ The input features are:
 - sine/cosine encodings for day of week;
 - a weekend indicator.
 
+## Forecasting Pipeline
+
+```mermaid
+flowchart LR
+    A[OTTO event logs] --> B[Hourly aggregation]
+    B --> C[Clicks, carts and orders]
+    C --> D[Feature engineering]
+    D --> E[168-hour historical window]
+    E --> F[Forecasting models]
+    F --> G[24-hour cart and order forecasts]
+    G --> H[Rolling-origin evaluation]
+    H --> I[Model comparison]
+    I --> J[Final 96-hour holdout]
+```
+
 ## Models
 
 I compare the Transformer with models that are intentionally simpler:
