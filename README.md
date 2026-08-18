@@ -12,6 +12,27 @@ event log is huge, but the time series available after aggregation is short?** T
 became important during the work. The OTTO training data contains hundreds of millions of
 events, but after global hourly aggregation there are only about four weeks of observations.
 
+## Project at a Glance
+
+This dissertation investigates multi-horizon demand forecasting for e-commerce cart and order activity using statistical baselines, machine-learning models, recurrent neural networks, and a Transformer encoder.
+
+The project focuses not only on predictive performance, but also on rigorous time-series evaluation: chronological splits, rolling-origin cross-validation, fixed random seeds, statistical model comparison, prediction intervals, and a final untouched holdout period.
+
+**Core stack:** Python, PyTorch, scikit-learn, pandas, NumPy
+
+**Research focus:** Time-series forecasting, demand forecasting, deep learning, model evaluation, statistical comparison
+
+### Repository Guide
+
+- [Forecasting task](#what-i-am-forecasting)
+- [Models](#models)
+- [Evaluation](#evaluation)
+- [Key findings](#key-findings)
+- [Final evaluation](#final-evaluation)
+- [Repository structure](#repository-structure)
+- [Main limitation](#main-limitation)
+- [Reproducibility](#reproducibility)
+
 ## What I am forecasting
 
 One row in the processed data represents one UTC hour:
@@ -30,6 +51,21 @@ The input features are:
 - sine/cosine encodings for hour of day;
 - sine/cosine encodings for day of week;
 - a weekend indicator.
+
+## Forecasting Pipeline
+
+```mermaid
+flowchart LR
+    A[OTTO event logs] --> B[Hourly aggregation]
+    B --> C[Clicks, carts and orders]
+    C --> D[Feature engineering]
+    D --> E[168-hour historical window]
+    E --> F[Forecasting models]
+    F --> G[24-hour cart and order forecasts]
+    G --> H[Rolling-origin evaluation]
+    H --> I[Model comparison]
+    I --> J[Final 96-hour holdout]
+```
 
 ## Models
 
@@ -84,7 +120,14 @@ The full evaluation code supports:
 The reasoning behind these choices is recorded in
 [`docs/EXPERIMENT_DESIGN.md`](docs/EXPERIMENT_DESIGN.md).
 
-## Final evaluation
+## Key Findings
+
+- The weekly seasonal baseline achieved the strongest performance during model development, outperforming the more complex neural architectures on the available aggregated time series.
+- The experiments show that greater model complexity did not automatically translate into better forecasting performance for the available aggregated time series.
+- Model selection was based on the predefined cross-validation procedure rather than the final holdout results.
+- Statistical comparisons, prediction intervals, and Transformer ablation experiments were used to examine performance beyond a single headline metric.
+
+## Final Evaluation
 
 Model selection was based on mean WAPE across three rolling-origin
 development folds. The final 96 hours of the series were kept separate
@@ -102,6 +145,8 @@ from model selection and used only for the final holdout evaluation.
 | 6 | Transformer | 0.1767 |
 | 7 | Seasonal naive 24h | 0.1917 |
 | 8 | Persistence | 0.7027 |
+
+![Cross-validation model comparison](artifacts/research/model_comparison_repeated.png)
 
 The weekly seasonal baseline was selected before looking at the final
 holdout. Greater model complexity did not translate into better
