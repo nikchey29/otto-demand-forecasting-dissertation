@@ -1,0 +1,23 @@
+{
+  "observed_hours": 672,
+  "expected_hours": 672,
+  "start_timestamp": "2022-07-31T22:00:00+00:00",
+  "end_timestamp": "2022-08-28T21:00:00+00:00",
+  "missing_hours": 0,
+  "duplicate_timestamps": 0,
+  "missing_values": {
+    "timestamp": 0,
+    "clicks": 0,
+    "carts": 0,
+    "orders": 0
+  },
+  "negative_values": {
+    "clicks": 0,
+    "carts": 0,
+    "orders": 0
+  },
+  "zero_volume_hours": {
+    "carts": 0,
+    "orders": 0
+  }
+}

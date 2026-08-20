@@ -120,6 +120,28 @@ The full evaluation code supports:
 The reasoning behind these choices is recorded in
 [`docs/EXPERIMENT_DESIGN.md`](docs/EXPERIMENT_DESIGN.md).
 
+### Data quality and preprocessing checks
+
+The processed series contains 672 consecutive hourly observations from
+31 July 2022 22:00 UTC to 28 August 2022 21:00 UTC. The final sanity
+check found no missing hourly timestamps, duplicate timestamps, missing
+values, negative event counts, or zero-volume hours for carts or orders.
+
+Across the complete series, hourly carts had a mean of 25,143.14 and a
+median of 28,803.50, while hourly orders had a mean of 7,587.72 and a
+median of 8,855.00. Full distribution summaries and quantiles are
+available in
+[`data_quality_summary.csv`](artifacts/research/data_quality_summary.csv),
+with the corresponding validation checks recorded in
+[`data_quality_sanity_check.json`](artifacts/research/data_quality_sanity_check.json).
+
+Feature and target scalers are fitted only on the training portion of
+each chronological split. The fitted transformations are then applied
+to validation and test observations without refitting, so information
+from later periods does not influence preprocessing parameters.
+
+![Hourly cart and order activity](artifacts/research/target_series_overview.png)
+
 ## Key Findings
 
 - The weekly seasonal baseline achieved the strongest performance during model development, outperforming the more complex neural architectures on the available aggregated time series.
@@ -164,6 +186,20 @@ Performance varied by target. Ridge obtained a lower carts WAPE of
 WAPE of 0.1134 compared with Ridge's 0.1218. The final model was not
 changed after observing the holdout; the model selected by the
 predefined cross-validation rule was retained.
+
+For visual inspection, the complete 96-hour holdout is shown using four
+consecutive, non-overlapping 24-hour forecast blocks. This preserves the
+original multi-horizon forecasting setup rather than averaging the
+overlapping rolling-origin forecasts into a new ensemble. The shaded
+regions show the 90% validation-calibrated empirical prediction
+intervals.
+
+![Final 96-hour carts holdout](artifacts/research/final_holdout_carts_with_intervals.png)
+
+![Final 96-hour orders holdout](artifacts/research/final_holdout_orders_with_intervals.png)
+
+The plotted values and interval bounds are available in
+[`final_holdout_plot_data.csv`](artifacts/research/final_holdout_plot_data.csv).
 
 ### Statistical comparison
 
