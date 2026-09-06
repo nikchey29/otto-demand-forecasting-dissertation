@@ -2,6 +2,21 @@
 **Chaithanya Vemuri**
 MSc Data Science, AI and Digital Business — Gisma University of Applied Sciences, Potsdam
 
+<!-- recruiter-summary:start -->
+[![CI](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml/badge.svg)](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml)
+
+**Research-grade multi-horizon forecasting of e-commerce cart and order activity**, comparing **8 forecasting approaches** under chronological, leakage-safe evaluation.
+
+**Evaluation:** 672 consecutive hourly observations · 168h history → 24h forecast · 3 expanding-window CV folds · 5 fixed neural-model seeds · untouched 96h final holdout
+
+| Selected model | Mean CV WAPE | Holdout carts WAPE | Holdout orders WAPE |
+| --- | ---: | ---: | ---: |
+| 168h weekly seasonal baseline | **13.93%** | **9.80%** | **11.34%** |
+
+**Key finding:** model selection favored the simpler weekly seasonal baseline over Extra Trees (**14.35%**), GRU (**15.42%**), Ridge (**16.79%**) and Transformer (**17.67%**) on mean CV WAPE. The selected model was frozen before the final holdout was evaluated.
+
+<!-- recruiter-summary:end -->
+
 This repository contains the technical work for my master's dissertation. I use the OTTO
 Recommender Systems event logs as a time-series problem: the session events are aggregated
 into hourly click, cart and order volumes, and the task is to forecast carts and orders for the
