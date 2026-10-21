@@ -5,16 +5,17 @@ MSc Data Science, AI and Digital Business — Gisma University of Applied Scienc
 <!-- recruiter-summary:start -->
 [![CI](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml/badge.svg)](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml)
 
-**Research-grade multi-horizon forecasting of e-commerce cart and order activity**, comparing **8 forecasting approaches** under chronological, leakage-safe evaluation.
+My MSc dissertation started with a simple question: **would a Transformer really be better at forecasting demand from e-commerce event logs?** After aggregating OTTO events, I had only **672 hourly observations** of cart and order activity to work with. I compared eight approaches, using chronological evaluation instead of a random data split.
 
-**Evaluation:** 672 consecutive hourly observations · 168h history → 24h forecast · 3 expanding-window CV folds · 5 fixed neural-model seeds · untouched 96h final holdout
+The result was a useful surprise: the **168-hour seasonal baseline**, not the Transformer, won the model-selection procedure. I kept that result, selected the baseline before opening the final holdout, and reported the limits of working with just four weeks of data.
+
+**Experiment:** 168 hours of history → 24-hour forecast · 3 expanding-window folds · 5 neural seeds · separate 96-hour final holdout.
 
 | Selected model | Mean CV WAPE | Holdout carts WAPE | Holdout orders WAPE |
 | --- | ---: | ---: | ---: |
-| 168h weekly seasonal baseline | **13.93%** | **9.80%** | **11.34%** |
+| Weekly seasonal baseline | **13.93%** | **9.80%** | **11.34%** |
 
-**Key finding:** model selection favored the simpler weekly seasonal baseline over Extra Trees (**14.35%**), GRU (**15.42%**), Ridge (**16.79%**) and Transformer (**17.67%**) on mean CV WAPE. The selected model was frozen before the final holdout was evaluated.
-
+The experiment forecasts **aggregate hourly activity**, not SKU-level sales. You can find the code, figures, ablations and research limitations below.
 <!-- recruiter-summary:end -->
 
 This repository contains the technical work for my master's dissertation. I use the OTTO
