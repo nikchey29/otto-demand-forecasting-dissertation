@@ -20,6 +20,8 @@ The PyTorch Transformer scored **17.67%** mean CV WAPE in the same comparison.
 The experiment forecasts **aggregate hourly activity**, not SKU-level sales. You can find the code, figures, ablations and research limitations below.
 <!-- recruiter-summary:end -->
 
+The earlier M5 retail-sales notebook is an archived prototype. Its original split fitted the scaler on the full series and let forecast target dates overlap across the split. The M5 error figures are unsuitable for comparison with the OTTO dissertation results.
+
 This repository contains the technical work for my master's dissertation. I use the OTTO
 Recommender Systems event logs as a time-series problem: the session events are aggregated
 into hourly click, cart and order volumes, and the task is to forecast carts and orders for the
