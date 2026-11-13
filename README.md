@@ -5,7 +5,7 @@ MSc Data Science, AI and Digital Business — Gisma University of Applied Scienc
 <!-- recruiter-summary:start -->
 [![CI](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml/badge.svg)](https://github.com/nikchey29/otto-demand-forecasting-dissertation/actions/workflows/ci.yml)
 
-My MSc dissertation started with a simple question: **would a Transformer really be better at forecasting demand from e-commerce event logs?** After aggregating OTTO events, I had only **672 hourly observations** of cart and order activity to work with. I compared eight approaches, using chronological evaluation instead of a random data split.
+My MSc dissertation started with a simple question: **would a Transformer really be better at forecasting demand from e-commerce event logs?** A single-pass Python pipeline streamed **216.7M OTTO click, cart and order events** into **672 hourly observations** for the forecast experiment. I compared eight approaches, using chronological evaluation instead of a random data split.
 
 The result was a useful surprise: the **168-hour seasonal baseline**, not the Transformer, won the model-selection procedure. I kept that result, selected the baseline before opening the final holdout, and reported the limits of working with just four weeks of data.
 
@@ -14,6 +14,8 @@ The result was a useful surprise: the **168-hour seasonal baseline**, not the Tr
 | Selected model | Mean CV WAPE | Holdout carts WAPE | Holdout orders WAPE |
 | --- | ---: | ---: | ---: |
 | Weekly seasonal baseline | **13.93%** | **9.80%** | **11.34%** |
+
+The PyTorch Transformer scored **17.67%** mean CV WAPE in the same comparison.
 
 The experiment forecasts **aggregate hourly activity**, not SKU-level sales. You can find the code, figures, ablations and research limitations below.
 <!-- recruiter-summary:end -->
